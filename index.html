@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f3d2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Golf Pool">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛳</text></svg>">
+<title>Golf Pool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--green:#0f3d2e;--fair:#1f6f4a;--fair2:#2f8a5c;--cream:#f5f2e9;--card:#fff;--ink:#14231c;--mute:#5d6e65;--line:#e3ddcc;--gold:#c9a227;--gold2:#f3e4a6;--red:#b4432f;--sat:env(safe-area-inset-top);--sab:env(safe-area-inset-bottom)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--cream);color:var(--ink);font-family:Inter,system-ui,-apple-system,sans-serif;font-size:16px;color-scheme:light}
+button,input,select,textarea{font:inherit;color:inherit}
+header.top{background:var(--green);color:#fff;padding:calc(18px + var(--sat)) 18px 22px;position:relative;overflow:hidden}
+header.top:after{content:"";position:absolute;right:-40px;top:-30px;width:170px;height:170px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#ffffff22,#ffffff05 60%,transparent 70%)}
+header.top h1{font-family:Fraunces,Georgia,serif;font-weight:800;font-size:28px;margin:0;letter-spacing:-.3px}
+header.top .sub{opacity:.75;font-size:14px;margin-top:4px}
+main{padding:16px 14px calc(150px + var(--sab));max-width:640px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+h2{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:20px;margin:0 0 10px}
+h3{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);margin:22px 4px 8px;font-weight:700}
+.muted{color:var(--mute)}.small{font-size:13px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:#fff;font-weight:600;cursor:pointer}
+.btn.primary{background:var(--fair);border-color:var(--fair);color:#fff}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#1c1503}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--fair)}
+.btn.danger{color:var(--red)}
+.btn.block{width:100%}
+.btn:disabled{opacity:.5}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+select.week{width:100%;min-height:48px;border-radius:12px;border:1px solid var(--line);background:#fff;padding:0 14px;font-weight:600;appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--mute) 50%),linear-gradient(135deg,var(--mute) 50%,transparent 50%);background-position:calc(100% - 20px) 21px,calc(100% - 15px) 21px;background-size:5px 5px;background-repeat:no-repeat}
+.hero{background:linear-gradient(160deg,var(--fair),var(--green));color:#fff;border:0;margin-top:12px}
+.pill{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:4px 9px;border-radius:99px;background:#ffffff26}
+.pill.final{background:var(--gold);color:#1c1503}
+.pill.live{background:#ffffff26}
+.hero .tname{font-family:Fraunces,Georgia,serif;font-size:22px;font-weight:600;margin:10px 0 2px}
+.leader{margin-top:14px;padding:12px 14px;border-radius:12px;background:#00000026;display:flex;gap:12px;align-items:center}
+.leader .trophy{font-size:28px}
+.leader .lbl{font-size:12px;text-transform:uppercase;letter-spacing:.08em;opacity:.8}
+.leader .who{font-weight:700;font-size:18px}
+.leader .what{font-size:14px;opacity:.85}
+.board{list-style:none;padding:0;margin:0}
+.board li{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px}
+.board li.first{border-color:var(--gold);background:linear-gradient(90deg,#fffaf0,#fff)}
+.rank{width:34px;height:34px;flex:none;border-radius:50%;display:grid;place-items:center;font-weight:700;background:var(--cream);font-size:14px}
+.first .rank{background:var(--gold);color:#1c1503}
+.who{flex:1;min-width:0}
+.who b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who span{font-size:14px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.score{text-align:right;flex:none}
+.score .pos{font-weight:700;font-size:17px}
+.score .par{font-size:13px;color:var(--mute)}
+.score .par.under{color:var(--red);font-weight:600}
+.mc{color:var(--mute)}
+.stand li .wins{font-family:Fraunces,Georgia,serif;font-size:24px;font-weight:800;color:var(--fair);line-height:1}
+.stand li .wl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
+.stats{font-size:13px;color:var(--mute)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);display:flex;padding-bottom:var(--sab);z-index:20}
+nav.tabs button{flex:1;border:0;background:none;padding:10px 0 9px;font-size:12px;font-weight:600;color:var(--mute);display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;min-height:56px}
+nav.tabs button.on{color:var(--fair)}
+nav.tabs svg{width:22px;height:22px}
+.savebar{position:fixed;left:10px;right:10px;bottom:calc(66px + var(--sab));background:var(--ink);color:#fff;border-radius:14px;padding:10px 10px 10px 16px;display:flex;align-items:center;gap:8px;z-index:21;box-shadow:0 8px 24px #0004;max-width:620px;margin:0 auto}
+.savebar span{flex:1;font-size:14px}
+.savebar .btn{min-height:40px;padding:0 14px}
+.savebar .btn.ghost{color:#fff;opacity:.8}
+.sheet-bg{position:fixed;inset:0;background:#0007;z-index:30;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--cream);width:100%;max-width:640px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:8px 16px calc(20px + var(--sab));-webkit-overflow-scrolling:touch}
+.sheet .grab{width:40px;height:5px;border-radius:3px;background:#0002;margin:4px auto 12px}
+.sheet .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.sheet .head h2{margin:0}
+label.f{display:block;font-size:13px;font-weight:600;color:var(--mute);margin:12px 2px 6px}
+input.t,textarea.t{width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px;font-size:16px}
+textarea.t{min-height:150px;resize:vertical;font-family:ui-monospace,Menlo,monospace;font-size:15px}
+.sc{display:grid;grid-template-columns:1fr 72px 72px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.sc input{text-align:center;padding:10px 4px}
+.sc .gn{font-weight:600;font-size:15px}
+.sc .gp{font-size:12px;color:var(--mute)}
+.schead{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);font-weight:700;border:0;padding-bottom:0}
+.list .it{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.list .it:last-child{border:0}
+.list .it .grow{flex:1;min-width:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:4px;background:#fff;border:1px solid var(--line);border-radius:99px;padding:6px 6px 6px 12px;font-size:14px;font-weight:500}
+.chip button{border:0;background:var(--cream);border-radius:50%;width:26px;height:26px;cursor:pointer;color:var(--mute)}
+.empty{text-align:center;padding:28px 18px}
+.empty .ball{font-size:44px}
+.steps{text-align:left;margin:16px 0;padding-left:20px;color:var(--mute);line-height:1.6}
+.toast{position:fixed;left:50%;top:calc(14px + var(--sat));transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;z-index:50;max-width:90vw;box-shadow:0 6px 18px #0004}
+.note{background:var(--gold2);border-radius:12px;padding:10px 12px;font-size:14px;margin:10px 0}
+.hist .it .w{font-weight:600}
+.err{color:var(--red);font-size:14px;margin-top:8px}
+.score .topar{font-weight:700;font-size:18px}
+.score .topar.under{color:var(--red)}
+.mc .topar{color:var(--mute);font-weight:600}
+.potrow{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.pot{text-align:right;flex:none;background:var(--gold);color:#1c1503;border-radius:12px;padding:6px 12px;margin-top:8px}
+.pot .lbl,.seasonsum .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;opacity:.8}
+.pot .amt{font-family:Fraunces,Georgia,serif;font-weight:800;font-size:24px;line-height:1.1}
+.livetag{display:inline-flex;align-items:center;gap:7px;margin-top:12px;font-size:13px;font-weight:600;opacity:.95}
+.dot{width:8px;height:8px;border-radius:50%;background:#7CFFB2;box-shadow:0 0 0 0 #7CFFB2aa;animation:pulse 1.8s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 8px #7CFFB200}100%{box-shadow:0 0 0 0 #7CFFB200}}
+.seasonsum{display:flex;justify-content:space-between;align-items:center;background:var(--green);color:#fff;border:0}
+.seasonsum .amt{font-family:Fraunces,Georgia,serif;font-weight:800;font-size:26px}
+.stand li .wins{font-size:20px}
+
+.hrow{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;position:relative;z-index:1}
+.refresh{flex:none;width:44px;height:44px;border-radius:50%;border:1px solid #ffffff40;background:#ffffff14;color:#fff;display:grid;place-items:center;cursor:pointer}
+.refresh svg{width:20px;height:20px}
+.refresh.spin svg{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+main{padding-bottom:calc(90px + var(--sab))}
+select.week + .btn,.upl{cursor:pointer}
+.upl.dis{opacity:.75;pointer-events:none}
+.spin1{display:inline-block;width:16px;height:16px;border:2px solid #ffffff66;border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-3px}
+.rv{margin:6px 0 4px}
+.rvrow{display:flex;gap:8px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.rvrow.warn .t{border-color:var(--gold)}
+.rvf{flex:1;display:grid;gap:6px;min-width:0}
+.rvf .t{padding:10px 12px}
+.rvs{display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:6px}
+.badge{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:700}
+.badge.ok{background:#e3f1e8;color:var(--fair)}
+.badge.w{background:var(--gold2);color:#7a5b00}
+.x{border:0;background:var(--cream);width:30px;height:30px;border-radius:50%;font-size:18px;color:var(--mute);cursor:pointer}
+</style>
+</head><body>
+<div id="app"></div>
+<script>
+(function(){
+"use strict";
+/* ====== PASTE YOUR APPS SCRIPT WEB APP URL HERE (ends in /exec) ====== */
+var API_URL = 'PASTE_WEB_APP_URL_HERE';
+/* ===================================================================== */
+var REFRESH_MS = 120000;
+
+var D = null, err = '', loading = false, lastLoad = null;
+var ui = { tab: lsGet('tab') || 'week', week: null };
+var pk = { pin: lsGet('pin') || '', unlocked: false, weeks: [], week: '', busy: '', err: '', rows: null, meta: null, pinErr: '' };
+
+function lsGet(k){ try { return localStorage.getItem('gp_' + k); } catch (e) { return null; } }
+function lsSet(k, v){ try { localStorage.setItem('gp_' + k, v); } catch (e) {} }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function $(s){ return document.querySelector(s); }
+
+/* ---------- data ---------- */
+function load(){
+  if (loading) return;
+  if (!/^https:\/\/script\.google(usercontent)?\.com\//.test(API_URL)) { err = 'setup'; render(); return; }
+  loading = true; render();
+  fetch(API_URL + (API_URL.indexOf('?') < 0 ? '?' : '&') + 't=' + Date.now(), { redirect: 'follow' })
+    .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(j){ D = j; err = ''; lastLoad = new Date(); })
+    .catch(function(e){ return jsonp().then(function(j){ D = j; err = ''; lastLoad = new Date(); }, function(){ err = 'Couldn\'t load scores (' + e.message + '). Pull to refresh or try again.'; }); })
+    .then(function(){ loading = false; if (ui.tab === 'picks' && pk.rows) syncRows(); render(); });
+}
+function jsonp(){
+  return new Promise(function(res, rej){
+    var cb = '__gp' + Date.now(), s = document.createElement('script'), t = setTimeout(function(){ done(); rej(new Error('timeout')); }, 15000);
+    function done(){ clearTimeout(t); try { delete window[cb]; } catch (e) { window[cb] = undefined; } s.remove(); }
+    window[cb] = function(j){ done(); res(j); };
+    s.onerror = function(){ done(); rej(new Error('jsonp')); };
+    s.src = API_URL + (API_URL.indexOf('?') < 0 ? '?' : '&') + 'callback=' + cb;
+    document.head.appendChild(s);
+  });
+}
+
+function parNum(t){
+  if (t == null || t === '') return null;
+  var s = String(t).trim().toUpperCase();
+  if (s === 'E' || s === 'EVEN') return 0;
+  var n = parseInt(s, 10); return isNaN(n) ? null : n;
+}
+function fmtPar(n){ return n == null ? '' : n === 0 ? 'E' : (n > 0 ? '+' + n : String(n)); }
+function isMC(pos){ return /^(CUT|MC|WD|DQ|MDF|DNS)$/i.test(String(pos || '').trim()); }
+function money(n){ n = Math.round(n * 100) / 100; return '$' + (n % 1 ? n.toFixed(2) : n.toLocaleString()); }
+function weekId(w){ return w.name + '|' + w.date; }
+function weeks(){ return (D && D.weeks || []).slice().sort(function(a, b){ return String(b.date).localeCompare(String(a.date)); }); }
+function curWeek(){
+  var ws = weeks(); if (!ws.length) return null;
+  var pick = ws.filter(function(w){ return weekId(w) === ui.week; })[0];
+  if (pick) return pick;
+  return ws.filter(function(w){ return !w.final; })[0] || ws[0];
+}
+function potOf(w){ return (Number(w.fee) || 0) * w.entries.length; }
+
+function weekRows(w){
+  var rows = w.entries.map(function(e){
+    return { player: e.player, golfer: e.golfer, pos: String(e.pos || '').toUpperCase(), thru: e.thru, tp: parNum(e.toPar), cut: isMC(e.pos) };
+  });
+  rows.sort(function(a, b){
+    if (a.tp == null && b.tp == null) return a.player.localeCompare(b.player);
+    if (a.tp == null) return 1; if (b.tp == null) return -1;
+    if (a.cut !== b.cut) return a.cut ? 1 : -1;
+    return (a.tp - b.tp) || a.player.localeCompare(b.player);
+  });
+  var rank = 0, prev = null;
+  rows.forEach(function(r, i){
+    if (r.tp == null) { r.rank = null; return; }
+    var k = (r.cut ? 'c' : 'm') + r.tp;
+    if (k !== prev) { rank = i + 1; prev = k; }
+    r.rank = rank;
+  });
+  return rows;
+}
+function season(){
+  var map = {};
+  function get(p){ return map[p] || (map[p] = { player: p, wins: 0, won: 0, paid: 0, best: null }); }
+  weeks().forEach(function(w){ w.entries.forEach(function(e){ get(e.player); }); });
+  weeks().filter(function(w){ return w.final; }).forEach(function(w){
+    var rows = weekRows(w), win = rows.filter(function(r){ return r.rank === 1; }), pot = potOf(w);
+    rows.forEach(function(r){
+      var m = get(r.player); m.paid += Number(w.fee) || 0;
+      if (r.tp != null && !r.cut && (m.best == null || r.tp < m.best)) m.best = r.tp;
+      if (r.rank === 1) { m.wins++; m.won += pot / win.length; }
+    });
+  });
+  var arr = Object.keys(map).map(function(k){ return map[k]; });
+  arr.sort(function(a, b){ return (b.won - a.won) || (b.wins - a.wins) || a.player.localeCompare(b.player); });
+  var rank = 0, prev = null;
+  arr.forEach(function(m, i){ var k = m.won.toFixed(2) + '|' + m.wins; if (k !== prev) { rank = i + 1; prev = k; } m.rank = rank; });
+  return arr;
+}
+
+/* ---------- views ---------- */
+function fmtDate(d){
+  var p = String(d || '').split('-'); if (p.length !== 3) return d || '';
+  return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+function fmtTime(iso){
+  var d = new Date(iso); if (!iso || isNaN(d)) return '';
+  var t = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  return new Date().toDateString() === d.toDateString() ? t : d.toLocaleDateString(undefined, { weekday: 'short' }) + ' ' + t;
+}
+function scoreCell(r){
+  if (r.tp == null && !r.pos) return '<div class="score"><div class="topar muted">—</div><div class="par">no score</div></div>';
+  var sub = r.pos;
+  if (r.thru && !r.cut) sub += (sub ? ' · ' : '') + (/^F/i.test(r.thru) ? 'F' : 'thru ' + r.thru);
+  return '<div class="score' + (r.cut ? ' mc' : '') + '"><div class="topar' + (r.tp != null && r.tp < 0 && !r.cut ? ' under' : '') + '">' + esc(fmtPar(r.tp) || '—') + '</div><div class="par">' + esc(sub) + '</div></div>';
+}
+function viewWeek(){
+  var w = curWeek();
+  if (!w) return '<div class="card empty"><div class="ball">⛳</div><h2>No weeks yet</h2><p class="muted">Picks show up here once the commissioner adds them to the sheet.</p></div>';
+  var rows = weekRows(w), leaders = rows.filter(function(r){ return r.rank === 1; }), lead;
+  if (!rows.length) lead = '<div class="leader"><div class="trophy">📋</div><div><div class="who">No picks yet</div></div></div>';
+  else if (!leaders.length) lead = '<div class="leader"><div class="trophy">⏳</div><div><div class="who">Waiting on scores</div><div class="what">Scores appear once play starts</div></div></div>';
+  else {
+    var l0 = leaders[0];
+    lead = '<div class="leader"><div class="trophy">🏆</div><div><div class="lbl">' + (w.final ? (leaders.length > 1 ? 'Co-winners · split the pot' : 'Winner') : (leaders.length > 1 ? 'Tied for the lead' : 'Leading')) + '</div>' +
+      '<div class="who">' + esc(leaders.map(function(r){ return r.player; }).join(' & ')) + '</div>' +
+      '<div class="what">' + esc(leaders.map(function(r){ return r.golfer; }).join(' & ')) + ' · ' + esc(fmtPar(l0.tp)) + (l0.pos ? ' (' + esc(l0.pos) + ')' : '') + '</div></div></div>';
+  }
+  var liveTag = !w.final && w.lastUpdate ? '<div class="livetag"><span class="dot"></span>Live scores · updated ' + esc(fmtTime(w.lastUpdate)) + '</div>' : '';
+  var ws = weeks();
+  var h = '<select class="week" data-change="week" aria-label="Choose week">' + ws.map(function(x){
+    return '<option value="' + esc(weekId(x)) + '"' + (weekId(x) === weekId(w) ? ' selected' : '') + '>' + esc(x.name) + (x.date ? ' · ' + esc(fmtDate(x.date)) : '') + '</option>';
+  }).join('') + '</select>';
+  h += '<section class="card hero"><span class="pill ' + (w.final ? 'final' : 'live') + '">' + (w.final ? 'Final' : 'In progress') + '</span>' +
+    '<div class="potrow"><div><div class="tname">' + esc(w.name) + '</div><div class="small" style="opacity:.8">' + esc(fmtDate(w.date)) + ' · ' + rows.length + ' entries × ' + esc(money(Number(w.fee) || 0)) + '</div></div>' +
+    '<div class="pot"><div class="lbl">Pot</div><div class="amt">' + esc(money(potOf(w))) + '</div></div></div>' + liveTag + lead + '</section>';
+  h += '<ol class="board">' + rows.map(function(r){
+    return '<li class="' + (r.rank === 1 ? 'first' : '') + '"><div class="rank">' + (r.rank == null ? '–' : r.rank) + '</div>' +
+      '<div class="who"><b>' + esc(r.player) + '</b><span>' + esc(r.golfer || 'No pick') + '</span></div>' + scoreCell(r) + '</li>';
+  }).join('') + '</ol>';
+  h += '<p class="small muted" style="text-align:center;margin-top:10px">Lowest score to par wins the pot. Missed cut / WD ranks below everyone who made the cut. Ties split the pot.</p>';
+  return h;
+}
+function viewSeason(){
+  var ws = weeks(), finals = ws.filter(function(w){ return w.final; }), st = season();
+  if (!ws.length) return '<div class="card empty"><div class="ball">🏆</div><h2>No weeks yet</h2></div>';
+  var paid = finals.reduce(function(s, w){ return s + potOf(w); }, 0);
+  var h = '<div class="card seasonsum"><div><div class="lbl">Paid out this season</div><div class="amt">' + esc(money(paid)) + '</div></div><div style="text-align:right"><div class="lbl">Final weeks</div><div class="amt">' + finals.length + '</div></div></div>';
+  h += '<ol class="board stand">' + st.map(function(m){
+    var net = m.won - m.paid;
+    return '<li class="' + (m.rank === 1 && m.won > 0 ? 'first' : '') + '"><div class="rank">' + m.rank + '</div><div class="who"><b>' + esc(m.player) + '</b>' +
+      '<div class="stats">' + m.wins + ' win' + (m.wins === 1 ? '' : 's') + ' · Net ' + (net >= 0 ? '+' : '−') + esc(money(Math.abs(net))) + (m.best != null ? ' · Best ' + esc(fmtPar(m.best)) : '') + '</div></div>' +
+      '<div class="score"><div class="wins">' + esc(money(m.won)) + '</div><div class="wl">won</div></div></li>';
+  }).join('') + '</ol>';
+  h += '<h3>Weekly results</h3><div class="card list hist">' + ws.map(function(w){
+    var lead = weekRows(w).filter(function(r){ return r.rank === 1; });
+    return '<div class="it" data-act="goweek" data-id="' + esc(weekId(w)) + '" style="cursor:pointer"><div class="grow"><div class="w">' + esc(w.name) + '</div><div class="small muted">' + esc(fmtDate(w.date)) + '</div></div>' +
+      '<div style="text-align:right"><div class="small" style="font-weight:600">' + (lead.length ? esc(lead.map(function(r){ return r.player; }).join(' & ')) : '—') + '</div><div class="small muted">' + (w.final ? 'Won ' : 'Leading · ') + esc(money(potOf(w))) + '</div></div></div>';
+  }).join('') + '</div>';
+  return h;
+}
+var ICONS = {
+  week: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V3l11 4-11 4"/><path d="M3 21h12"/></svg>',
+  season: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>',
+  picks: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>'
+};
+/* ---------- picks from a photo (commissioner) ---------- */
+function post(body){
+  return fetch(API_URL, { method: 'POST', body: JSON.stringify(body) })
+    .then(function(r){ return r.json(); })
+    .then(function(j){ if (!j.ok) throw new Error(j.error || 'Request failed'); return j; });
+}
+function viewPicks(){
+  if (err === 'setup') return '<div class="card empty"><p class="muted">Connect the site to your Sheet first (API_URL).</p></div>';
+  if (!pk.unlocked) {
+    return '<div class="card"><h2>Commissioner</h2><p class="small muted" style="margin-top:0">Upload a photo of the handwritten picks and they\'re entered for you. Enter the PIN from the Settings tab of your Sheet.</p>' +
+      '<label class="f" for="pin">PIN</label><input class="t" id="pin" type="password" inputmode="numeric" autocomplete="current-password" value="' + esc(pk.pin) + '">' +
+      (pk.pinErr ? '<div class="err">' + esc(pk.pinErr) + '</div>' : '') +
+      '<button class="btn primary block" style="margin-top:12px" data-act="unlock"' + (pk.busy ? ' disabled' : '') + '>' + (pk.busy ? 'Checking…' : 'Unlock') + '</button></div>';
+  }
+  var h = '';
+  if (!pk.rows) {
+    h += '<div class="card"><h2>Add picks from a photo</h2>' +
+      '<label class="f" for="pw">Week</label><select class="week" id="pw" data-change="pkweek">' + pk.weeks.map(function(w){ return '<option' + (w === pk.week ? ' selected' : '') + '>' + esc(w) + '</option>'; }).join('') + '</select>' +
+      '<label class="btn primary block upl' + (pk.busy ? ' dis' : '') + '" style="margin-top:14px">' + (pk.busy ? '<span class="spin1"></span> ' + esc(pk.busy) : '📷 Take or choose a photo') +
+      '<input type="file" id="pf" accept="image/*" style="display:none"' + (pk.busy ? ' disabled' : '') + '></label>' +
+      '<p class="small muted">Lay the sheet flat in good light and fill the frame. One name and one golfer per line works best.</p>' +
+      (pk.err ? '<div class="err">' + esc(pk.err) + '</div>' : '') + '</div>';
+    h += '<button class="btn ghost block" data-act="manual">Type picks in instead</button>';
+    h += '<button class="btn ghost block" data-act="lock">Lock</button>';
+    return h;
+  }
+  var unsure = pk.rows.filter(function(r){ return r.unsure; }).length;
+  h += '<div class="card"><h2>Check the picks</h2><p class="small muted" style="margin-top:0">' + esc(pk.week) +
+    (pk.meta && pk.meta.fieldSize ? ' · checked against ' + pk.meta.fieldSize + ' golfers in the field' : '') + '</p>' +
+    (unsure ? '<div class="note">' + unsure + ' line' + (unsure === 1 ? '' : 's') + ' marked ⚠ need a look. Fix the name or golfer, then save.</div>' : '') +
+    (pk.meta && pk.meta.existing ? '<p class="small muted">' + pk.meta.existing + ' picks already saved for this week. Anyone listed here gets their pick replaced.</p>' : '') +
+    '<div class="rv">' + pk.rows.map(function(r, i){
+      return '<div class="rvrow' + (r.unsure ? ' warn' : '') + '"><div class="rvf">' +
+        '<input class="t" data-ri="' + i + '" data-rk="player" placeholder="Name" value="' + esc(r.player) + '" autocapitalize="words">' +
+        '<input class="t" data-ri="' + i + '" data-rk="golfer" placeholder="Golfer" value="' + esc(r.golfer) + '" autocapitalize="words">' +
+        (r.written && r.written !== r.golfer ? '<div class="small muted">Read as “' + esc(r.written) + '”</div>' : '') + '</div>' +
+        '<div class="rvs"><span class="badge ' + (r.unsure ? 'w' : 'ok') + '">' + (r.unsure ? '⚠' : '✓') + '</span><button class="x" data-act="rmrow" data-i="' + i + '" aria-label="Remove">×</button></div></div>';
+    }).join('') + '</div>' +
+    '<button class="btn ghost block" data-act="addrow">+ Add a line</button>' +
+    (pk.err ? '<div class="err">' + esc(pk.err) + '</div>' : '') +
+    '<button class="btn primary block" style="margin-top:10px" data-act="savepicks"' + (pk.busy ? ' disabled' : '') + '>' + (pk.busy ? esc(pk.busy) : 'Save ' + pk.rows.length + ' pick' + (pk.rows.length === 1 ? '' : 's')) + '</button>' +
+    '<button class="btn ghost block" data-act="cancelrows">Start over</button></div>';
+  return h;
+}
+function syncRows(){
+  document.querySelectorAll('[data-ri]').forEach(function(inp){
+    var r = pk.rows[+inp.dataset.ri]; if (!r) return;
+    var v = inp.value.trim();
+    if (r[inp.dataset.rk] !== v) { r[inp.dataset.rk] = v; if (inp.dataset.rk === 'golfer') r.written = ''; }
+  });
+}
+function shrink(file){
+  return new Promise(function(res, rej){
+    var url = URL.createObjectURL(file), img = new Image();
+    img.onload = function(){
+      var max = 1800, w = img.naturalWidth, h = img.naturalHeight, k = Math.min(1, max / Math.max(w, h));
+      var c = document.createElement('canvas'); c.width = Math.round(w * k); c.height = Math.round(h * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      res(c.toDataURL('image/jpeg', 0.85).split(',')[1]);
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); rej(new Error('That photo couldn\'t be opened. Try a JPG or a screenshot.')); };
+    img.src = url;
+  });
+}
+function readPhoto(file){
+  pk.err = ''; pk.busy = 'Reading handwriting…'; render();
+  shrink(file).then(function(b64){ return post({ action: 'read', pin: pk.pin, week: pk.week, image: b64, mime: 'image/jpeg' }); })
+    .then(function(j){
+      pk.week = j.week; pk.weeks = j.weeks || pk.weeks; pk.meta = j; pk.rows = j.rows || [];
+      if (!pk.rows.length) { pk.rows = null; pk.err = 'No picks found in that photo. Try a closer, brighter shot.'; }
+    })
+    .catch(function(e){ pk.err = e.message; })
+    .then(function(){ pk.busy = ''; render(); window.scrollTo(0, 0); });
+}
+function picksAct(a, t){
+  if (a === 'unlock') {
+    var v = ($('#pin') || {}).value || ''; pk.pin = v.trim(); pk.busy = 'x'; pk.pinErr = ''; render();
+    post({ action: 'check', pin: pk.pin }).then(function(j){
+      pk.unlocked = true; pk.weeks = j.weeks || []; pk.week = pk.week && pk.weeks.indexOf(pk.week) >= 0 ? pk.week : (pk.weeks[0] || ''); lsSet('pin', pk.pin);
+      if (!pk.weeks.length) pk.err = 'No open week yet. It\'s added automatically once ESPN posts this week\'s tournament, or add it on the Weeks tab.';
+    }).catch(function(e){ pk.pinErr = e.message; }).then(function(){ pk.busy = ''; render(); });
+    return true;
+  }
+  if (a === 'lock') { pk.unlocked = false; pk.pin = ''; lsSet('pin', ''); pk.rows = null; render(); return true; }
+  if (a === 'manual') { pk.rows = [{ player: '', golfer: '', unsure: false }]; pk.meta = { existing: 0 }; pk.err = ''; render(); return true; }
+  if (a === 'addrow') { syncRows(); pk.rows.push({ player: '', golfer: '', unsure: false }); render(); return true; }
+  if (a === 'rmrow') { syncRows(); pk.rows.splice(+t.dataset.i, 1); if (!pk.rows.length) pk.rows = null; render(); return true; }
+  if (a === 'cancelrows') { pk.rows = null; pk.err = ''; render(); return true; }
+  if (a === 'savepicks') {
+    syncRows();
+    var bad = pk.rows.filter(function(r){ return !r.player || !r.golfer; }).length;
+    if (bad) { pk.err = bad + ' line' + (bad === 1 ? ' is' : 's are') + ' missing a name or golfer. Fill it in or remove it.'; render(); return true; }
+    pk.err = ''; pk.busy = 'Saving…'; render();
+    post({ action: 'save', pin: pk.pin, week: pk.week, rows: pk.rows.map(function(r){ return { player: r.player, golfer: r.golfer }; }) })
+      .then(function(j){ pk.rows = null; pk.busy = ''; ui.tab = 'week'; ui.week = null; lsSet('tab', 'week'); toastMsg('Saved ' + j.saved + ' picks for ' + j.week); load(); })
+      .catch(function(e){ pk.busy = ''; pk.err = e.message; render(); });
+    return true;
+  }
+  return false;
+}
+var toastT;
+function toastMsg(m){
+  var el = document.querySelector('.toast'); if (el) el.remove();
+  el = document.createElement('div'); el.className = 'toast'; el.textContent = m; document.body.appendChild(el);
+  clearTimeout(toastT); toastT = setTimeout(function(){ el.remove(); }, 3000);
+}
+
+function render(){
+  var body;
+  if (err === 'setup') body = '<div class="card empty"><div class="ball">🔌</div><h2>Almost there</h2><p class="muted">Paste your Apps Script web app URL into <b>API_URL</b> near the top of index.html.</p></div>';
+  else if (!D && loading) body = '<div class="card empty"><div class="ball">⛳</div><p class="muted">Loading the leaderboard…</p></div>';
+  else if (!D) body = '<div class="card empty"><div class="ball">⚠️</div><p class="muted">' + esc(err) + '</p><button class="btn primary" data-act="refresh">Try again</button></div>';
+  else if (ui.tab === 'picks') body = viewPicks();
+  else body = (err ? '<div class="note">' + esc(err) + '</div>' : '') + (ui.tab === 'season' ? viewSeason() : viewWeek());
+  var name = D && D.name || 'Golf Pool';
+  document.title = name;
+  var sub = lastLoad ? 'Refreshed ' + fmtTime(lastLoad.toISOString()) : 'Weekly golf pool';
+  var y = window.scrollY;
+  $('#app').innerHTML = '<header class="top"><div class="hrow"><div><h1>' + esc(name) + '</h1><div class="sub">' + esc(sub) + '</div></div>' +
+    '<button class="refresh' + (loading ? ' spin' : '') + '" data-act="refresh" aria-label="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button></div></header>' +
+    '<main>' + body + '</main>' +
+    '<nav class="tabs">' + [['week', 'This Week'], ['season', 'Season'], ['picks', 'Picks']].map(function(t){ return '<button class="' + (ui.tab === t[0] ? 'on' : '') + '" data-act="tab" data-v="' + t[0] + '">' + ICONS[t[0]] + t[1] + '</button>'; }).join('') + '</nav>';
+  window.scrollTo(0, y);
+}
+
+document.addEventListener('click', function(e){
+  var t = e.target.closest('[data-act]'); if (!t) return;
+  var a = t.dataset.act;
+  if (a === 'tab') { ui.tab = t.dataset.v; lsSet('tab', ui.tab); window.scrollTo(0, 0); render(); }
+  else if (a === 'goweek') { ui.week = t.dataset.id; ui.tab = 'week'; lsSet('tab', 'week'); window.scrollTo(0, 0); render(); }
+  else if (a === 'refresh') load();
+  else picksAct(a, t);
+});
+document.addEventListener('change', function(e){
+  if (e.target.dataset.change === 'week') { ui.week = e.target.value; render(); }
+  else if (e.target.dataset.change === 'pkweek') { pk.week = e.target.value; }
+  else if (e.target.id === 'pf' && e.target.files && e.target.files[0]) readPhoto(e.target.files[0]);
+});
+document.addEventListener('keydown', function(e){ if (e.key === 'Enter' && e.target.id === 'pin') picksAct('unlock'); });
+document.addEventListener('visibilitychange', function(){ if (!document.hidden && (!lastLoad || Date.now() - lastLoad > 30000)) load(); });
+setInterval(function(){ if (!document.hidden && ui.tab !== 'picks') load(); }, REFRESH_MS);
+render(); load();
+})();
+</script>
+</body></html>
