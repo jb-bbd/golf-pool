@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Golf Pool">
-<meta name="app-version" content="2026-11-05.3">
+<meta name="app-version" content="2026-11-09.1">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=2">
 <link rel="manifest" href="manifest.webmanifest">
@@ -239,21 +239,29 @@ function curWeek(){
 }
 function potOf(w){ return (Number(w.fee) || 0) * w.entries.length; }
 
+function posNumOf(pos){ var m = String(pos || '').trim().match(/^T?(\d+)$/i); return m ? +m[1] : null; }
+/* Same score to par = tied, unless the golfers' finishing positions differ (a playoff: winner "1", runner-up "2"). */
+function sameSpot(a, b){
+  if (a.cut !== b.cut || a.tp !== b.tp) return false;
+  return a.pn == null || b.pn == null || a.pn === b.pn;
+}
 function weekRows(w){
   var rows = w.entries.map(function(e){
-    return { player: e.player, golfer: e.golfer, pos: String(e.pos || '').toUpperCase(), thru: e.thru, tp: parNum(e.toPar), cut: isMC(e.pos) };
+    var pos = String(e.pos || '').toUpperCase();
+    return { player: e.player, golfer: e.golfer, pos: pos, pn: posNumOf(pos), thru: e.thru, tp: parNum(e.toPar), cut: isMC(e.pos) };
   });
   rows.sort(function(a, b){
     if (a.tp == null && b.tp == null) return a.player.localeCompare(b.player);
     if (a.tp == null) return 1; if (b.tp == null) return -1;
     if (a.cut !== b.cut) return a.cut ? 1 : -1;
-    return (a.tp - b.tp) || a.player.localeCompare(b.player);
+    if (a.tp !== b.tp) return a.tp - b.tp;
+    if (a.pn != null && b.pn != null && a.pn !== b.pn) return a.pn - b.pn;
+    return a.player.localeCompare(b.player);
   });
-  var rank = 0, prev = null;
+  var rank = 0;
   rows.forEach(function(r, i){
     if (r.tp == null) { r.rank = null; return; }
-    var k = (r.cut ? 'c' : 'm') + r.tp;
-    if (k !== prev) { rank = i + 1; prev = k; }
+    if (i === 0 || !sameSpot(r, rows[i - 1])) rank = i + 1;
     r.rank = rank;
   });
   return rows;
