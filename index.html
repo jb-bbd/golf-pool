@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Golf Pool">
-<meta name="app-version" content="2026-11-09.2">
+<meta name="app-version" content="2026-11-09.4">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=2">
 <link rel="manifest" href="manifest.webmanifest">
@@ -118,6 +118,26 @@ textarea.t{min-height:150px;resize:vertical;font-family:ui-monospace,Menlo,monos
 @keyframes spin{to{transform:rotate(360deg)}}
 main{padding-bottom:calc(90px + var(--sab))}
 header.top{padding-top:calc(14px + var(--sat))}
+.pickcard .pcrow{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.pickcard .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--mute)}
+.pickcard .big{font-family:Fraunces,Georgia,serif;font-weight:800;font-size:40px;line-height:1.05;color:var(--green)}
+.pcnote{text-align:right;font-size:13px;color:var(--mute);line-height:1.4}
+.chips2{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chips2 span{font-size:13px;font-weight:600;background:var(--cream);border:1px solid var(--line);border-radius:99px;padding:4px 10px}
+.board.stand li.mem{display:block;padding:0}
+.memb{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;padding:12px 14px;text-align:left;font:inherit;color:inherit;cursor:pointer;min-height:56px}
+.memb .chev{width:18px;height:18px;flex:none;color:var(--mute);transition:transform .15s}
+li.mem.open .chev{transform:rotate(180deg)}
+.mh{border-top:1px solid var(--line);padding:6px 14px 12px}
+.mhstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:8px 0 10px}
+.mhstats .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;color:var(--mute)}
+.mhstats .v{font-family:Fraunces,Georgia,serif;font-weight:800;font-size:22px;color:var(--green)}
+.mhrow{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px dashed var(--line)}
+.mhrow .t1{font-weight:600;font-size:15px}
+.mhrow .grow{flex:1;min-width:0}
+.mhr{text-align:right;flex:none}
+.wonamt{color:#5c4500;font-weight:700}
+.mhrow.won .t1{color:var(--green)}
 .seg{display:flex;background:#e9e4d6;border-radius:14px;padding:4px;gap:4px;margin:12px 0}
 .seg button{flex:1;min-height:44px;border:0;border-radius:11px;background:transparent;font-weight:700;font-size:15px;color:var(--mute);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
 .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px #0002}
@@ -149,6 +169,11 @@ select.week + .btn,.upl{cursor:pointer}
 .rvrow.warn .t{border-color:var(--gold)}
 .rvf{flex:1;display:grid;gap:6px;min-width:0}
 .rvf .t{padding:10px 12px}
+.rvtop{display:flex;gap:8px;align-items:stretch}
+.rvtop > .t{flex:1;min-width:0}
+.pkn{display:flex;flex-direction:column;flex:none;width:64px;position:relative}
+.pkn span{position:absolute;top:3px;left:0;right:0;text-align:center;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);pointer-events:none}
+.pkn .t{text-align:center;padding:16px 4px 4px;font-weight:700;height:100%}
 .rvs{display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:6px}
 .badge{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:700}
 .badge.ok{background:#e3f1e8;color:var(--fair)}
@@ -166,7 +191,7 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbzO3SN4XdRejNVOCAx9zk5LYM
 var REFRESH_MS = 120000;
 
 var D = null, err = '', loading = false, lastLoad = null;
-var ui = { tab: lsGet('tab') || 'week', week: null, view: lsGet('view') === 'field' ? 'field' : 'picks', q: '' };
+var ui = { tab: lsGet('tab') || 'week', week: null, view: lsGet('view') === 'field' ? 'field' : 'picks', q: '', member: null };
 var pk = { pin: lsGet('pin') || '', unlocked: false, weeks: [], week: '', busy: '', err: '', rows: null, meta: null, pinErr: '' };
 
 function lsGet(k){ try { return localStorage.getItem('gp_' + k); } catch (e) { return null; } }
@@ -259,7 +284,7 @@ function sameSpot(a, b){
 function weekRows(w){
   var rows = w.entries.map(function(e){
     var pos = String(e.pos || '').toUpperCase();
-    return { player: e.player, golfer: e.golfer, pos: pos, pn: posNumOf(pos), thru: e.thru, tp: parNum(e.toPar), cut: isMC(e.pos) };
+    return { player: e.player, golfer: e.golfer, pos: pos, pn: posNumOf(pos), thru: e.thru, tp: parNum(e.toPar), cut: isMC(e.pos), pick: e.pick || null };
   });
   rows.sort(function(a, b){
     if (a.tp == null && b.tp == null) return a.player.localeCompare(b.player);
@@ -346,26 +371,74 @@ function viewWeek(){
   }
   h += '<ol class="board">' + rows.map(function(r){
     return '<li class="' + (r.rank === 1 ? 'first' : '') + '"><div class="rank">' + (r.rank == null ? '–' : r.rank) + '</div>' +
-      '<div class="who"><b>' + esc(r.player) + '</b><span>' + esc(r.golfer || 'No pick') + '</span></div>' + scoreCell(r) + '</li>';
+      '<div class="who"><b>' + esc(r.player) + '</b><span>' + esc(r.golfer || 'No pick') + (r.pick ? ' · Pick #' + r.pick : '') + '</span></div>' + scoreCell(r) + '</li>';
   }).join('') + '</ol>';
   h += '<p class="small muted" style="text-align:center;margin-top:10px">Lowest score to par wins the pot. Missed cut / WD ranks below everyone who made the cut. Ties split the pot.</p>';
   return h;
 }
+function avg(a){ return a.length ? a.reduce(function(x, y){ return x + y; }, 0) / a.length : null; }
+function fmt1(n){ return n == null ? '—' : (Math.round(n * 10) / 10).toString(); }
+function memberHistory(name){
+  var key = name.toLowerCase(), out = [];
+  weeks().forEach(function(w){
+    var rows = weekRows(w), r = rows.filter(function(x){ return x.player.toLowerCase() === key; })[0];
+    if (!r) return;
+    var winners = rows.filter(function(x){ return x.rank === 1; }).length;
+    out.push({ w: w, r: r, n: rows.length, won: w.final && r.rank === 1 ? potOf(w) / winners : 0 });
+  });
+  return out;
+}
+function viewMember(name){
+  var hist = memberHistory(name);
+  var picks = hist.map(function(x){ return x.r.pick; }).filter(Boolean);
+  var finishes = hist.filter(function(x){ return x.w.final && x.r.rank; }).map(function(x){ return x.r.rank; });
+  var h = '<div class="mh"><div class="mhstats"><div><div class="lbl">Avg pick #</div><div class="v">' + fmt1(avg(picks)) + '</div></div>' +
+    '<div><div class="lbl">Avg pool finish</div><div class="v">' + fmt1(avg(finishes)) + '</div></div>' +
+    '<div><div class="lbl">Weeks</div><div class="v">' + hist.length + '</div></div></div>';
+  h += hist.map(function(x){
+    var r = x.r, golf = r.tp == null ? 'no score yet' : (r.cut ? 'MC ' + fmtPar(r.tp) : (r.pos ? r.pos + ' · ' : '') + fmtPar(r.tp));
+    return '<div class="mhrow' + (x.won ? ' won' : '') + '"><div class="grow"><div class="t1">' + esc(x.w.name) + '</div>' +
+      '<div class="small muted">' + esc(r.golfer) + (r.pick ? ' · Pick #' + r.pick : '') + ' · ' + esc(golf) + '</div></div>' +
+      '<div class="mhr"><div class="t1">' + (r.rank ? ordinal(r.rank) : '—') + '<span class="muted small"> of ' + x.n + '</span></div>' +
+      '<div class="small ' + (x.won ? 'wonamt' : 'muted') + '">' + (x.won ? 'Won ' + esc(money(x.won)) : (x.w.final ? '' : 'In progress')) + '</div></div></div>';
+  }).join('');
+  return h + '</div>';
+}
+function ordinal(n){ var s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
 function viewSeason(){
   var ws = weeks(), finals = ws.filter(function(w){ return w.final; }), st = season();
   if (!ws.length) return '<div class="card empty"><div class="ball">🏆</div><h2>No weeks yet</h2></div>';
   var paid = finals.reduce(function(s, w){ return s + potOf(w); }, 0);
   var h = '<div class="card seasonsum"><div><div class="lbl">Paid out this season</div><div class="amt">' + esc(money(paid)) + '</div></div><div style="text-align:right"><div class="lbl">Final weeks</div><div class="amt">' + finals.length + '</div></div></div>';
+
+  // Winners' pick numbers
+  var winPicks = [];
+  finals.forEach(function(w){
+    weekRows(w).filter(function(r){ return r.rank === 1; }).forEach(function(r){ winPicks.push({ w: w, r: r, size: w.entries.length }); });
+  });
+  var nums = winPicks.map(function(x){ return x.r.pick; }).filter(Boolean);
+  if (nums.length) {
+    var avgField = avg(winPicks.filter(function(x){ return x.r.pick; }).map(function(x){ return (x.size + 1) / 2; }));
+    h += '<div class="card pickcard"><div class="pcrow"><div><div class="lbl">Winners\' average pick #</div><div class="big">' + fmt1(avg(nums)) + '</div></div>' +
+      '<div class="pcnote">Middle of the order is about #' + fmt1(avgField) + '<br>' + nums.length + ' winning pick' + (nums.length === 1 ? '' : 's') + ' counted</div></div>' +
+      '<div class="chips2">' + winPicks.slice(0, 12).map(function(x){ return '<span title="' + esc(x.w.name) + '">' + (x.r.pick ? '#' + x.r.pick : '#?') + ' ' + esc(x.r.player) + '</span>'; }).join('') + '</div></div>';
+  }
+
+  h += '<p class="small muted" style="margin:4px 4px 8px">Tap a name to see their week-by-week picks.</p>';
   h += '<ol class="board stand">' + st.map(function(m){
-    var net = m.won - m.paid;
-    return '<li class="' + (m.rank === 1 && m.won > 0 ? 'first' : '') + '"><div class="rank">' + m.rank + '</div><div class="who"><b>' + esc(m.player) + '</b>' +
+    var net = m.won - m.paid, open = ui.member === m.player;
+    return '<li class="mem' + (m.rank === 1 && m.won > 0 ? ' first' : '') + (open ? ' open' : '') + '"><button class="memb" data-act="member" data-p="' + esc(m.player) + '" aria-expanded="' + open + '">' +
+      '<div class="rank">' + m.rank + '</div><div class="who"><b>' + esc(m.player) + '</b>' +
       '<div class="stats">' + m.wins + ' win' + (m.wins === 1 ? '' : 's') + ' · Net ' + (net >= 0 ? '+' : '−') + esc(money(Math.abs(net))) + (m.best != null ? ' · Best ' + esc(fmtPar(m.best)) : '') + '</div></div>' +
-      '<div class="score"><div class="wins">' + esc(money(m.won)) + '</div><div class="wl">won</div></div></li>';
+      '<div class="score"><div class="wins">' + esc(money(m.won)) + '</div><div class="wl">won</div></div>' +
+      '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button>' +
+      (open ? viewMember(m.player) : '') + '</li>';
   }).join('') + '</ol>';
   h += '<h3>Weekly results</h3><div class="card list hist">' + ws.map(function(w){
     var lead = weekRows(w).filter(function(r){ return r.rank === 1; });
+    var pk = lead.map(function(r){ return r.pick; }).filter(Boolean);
     return '<div class="it" data-act="goweek" data-id="' + esc(weekId(w)) + '" style="cursor:pointer"><div class="grow"><div class="w">' + esc(w.name) + '</div><div class="small muted">' + esc(fmtDate(w.date)) + '</div></div>' +
-      '<div style="text-align:right"><div class="small" style="font-weight:600">' + (lead.length ? esc(lead.map(function(r){ return r.player; }).join(' & ')) : '—') + '</div><div class="small muted">' + (w.final ? 'Won ' : 'Leading · ') + esc(money(potOf(w))) + '</div></div></div>';
+      '<div style="text-align:right"><div class="small" style="font-weight:600">' + (lead.length ? esc(lead.map(function(r){ return r.player; }).join(' & ')) : '—') + '</div><div class="small muted">' + (w.final ? 'Won ' : 'Leading · ') + esc(money(potOf(w))) + (pk.length ? ' · Pick #' + pk.join(', #') : '') + '</div></div></div>';
   }).join('') + '</div>';
   return h;
 }
@@ -405,9 +478,11 @@ function viewPicks(){
     (pk.meta && pk.meta.fieldSize ? ' · checked against ' + pk.meta.fieldSize + ' golfers in the field' : '') + '</p>' +
     (unsure ? '<div class="note">' + unsure + ' line' + (unsure === 1 ? '' : 's') + ' marked ⚠ need a look. Fix the name or golfer, then save.</div>' : '') +
     (pk.meta && pk.meta.existing ? '<p class="small muted">' + pk.meta.existing + ' picks already saved for this week. Anyone listed here gets their pick replaced.</p>' : '') +
+    '<p class="small muted">Pick # comes from the number next to each name. Leave it blank to number them in order.</p>' +
     '<div class="rv">' + pk.rows.map(function(r, i){
       return '<div class="rvrow' + (r.unsure ? ' warn' : '') + '"><div class="rvf">' +
-        '<input class="t" data-ri="' + i + '" data-rk="player" placeholder="Name" value="' + esc(r.player) + '" autocapitalize="words">' +
+        '<div class="rvtop"><label class="pkn"><span>Pick #</span><input class="t" data-ri="' + i + '" data-rk="pick" inputmode="numeric" pattern="[0-9]*" maxlength="3" value="' + esc(r.pick || '') + '" aria-label="Pick number"></label>' +
+        '<input class="t" data-ri="' + i + '" data-rk="player" placeholder="Name" value="' + esc(r.player) + '" autocapitalize="words"></div>' +
         '<input class="t" data-ri="' + i + '" data-rk="golfer" placeholder="Golfer" value="' + esc(r.golfer) + '" autocapitalize="words">' +
         (r.written && r.written !== r.golfer ? '<div class="small muted">Read as “' + esc(r.written) + '”</div>' : '') + '</div>' +
         '<div class="rvs"><span class="badge ' + (r.unsure ? 'w' : 'ok') + '">' + (r.unsure ? '⚠' : '✓') + '</span><button class="x" data-act="rmrow" data-i="' + i + '" aria-label="Remove">×</button></div></div>';
@@ -422,6 +497,7 @@ function syncRows(){
   document.querySelectorAll('[data-ri]').forEach(function(inp){
     var r = pk.rows[+inp.dataset.ri]; if (!r) return;
     var v = inp.value.trim();
+    if (inp.dataset.rk === 'pick') { v = v.replace(/[^0-9]/g, ''); r.pick = v ? parseInt(v, 10) : null; return; }
     if (r[inp.dataset.rk] !== v) { r[inp.dataset.rk] = v; if (inp.dataset.rk === 'golfer') r.written = ''; }
   });
 }
@@ -444,6 +520,7 @@ function readPhoto(file){
   shrink(file).then(function(b64){ return post({ action: 'read', pin: pk.pin, week: pk.week, image: b64, mime: 'image/jpeg' }); })
     .then(function(j){
       pk.week = j.week; pk.weeks = j.weeks || pk.weeks; pk.meta = j; pk.rows = j.rows || [];
+      if (pk.rows.every(function(r){ return r.pick; })) pk.rows.sort(function(a, b){ return a.pick - b.pick; });
       if (!pk.rows.length) { pk.rows = null; pk.err = 'No picks found in that photo. Try a closer, brighter shot.'; }
     })
     .catch(function(e){ pk.err = e.message; })
@@ -467,8 +544,11 @@ function picksAct(a, t){
     syncRows();
     var bad = pk.rows.filter(function(r){ return !r.player || !r.golfer; }).length;
     if (bad) { pk.err = bad + ' line' + (bad === 1 ? ' is' : 's are') + ' missing a name or golfer. Fill it in or remove it.'; render(); return true; }
+    var seen = {}, dup = [];
+    pk.rows.forEach(function(r){ if (r.pick) { if (seen[r.pick] && dup.indexOf(r.pick) < 0) dup.push(r.pick); seen[r.pick] = true; } });
+    if (dup.length) { pk.err = 'Pick #' + dup.join(', #') + ' is used more than once. Fix the numbers, then save.'; render(); return true; }
     pk.err = ''; pk.busy = 'Saving…'; render();
-    post({ action: 'save', pin: pk.pin, week: pk.week, rows: pk.rows.map(function(r){ return { player: r.player, golfer: r.golfer }; }) })
+    post({ action: 'save', pin: pk.pin, week: pk.week, rows: pk.rows.map(function(r){ return { player: r.player, golfer: r.golfer, pick: r.pick || null }; }) })
       .then(function(j){ pk.rows = null; pk.busy = ''; ui.tab = 'week'; ui.week = null; lsSet('tab', 'week'); toastMsg('Saved ' + j.saved + ' picks for ' + j.week); load(); })
       .catch(function(e){ pk.busy = ''; pk.err = e.message; render(); });
     return true;
@@ -507,6 +587,7 @@ document.addEventListener('click', function(e){
   else if (a === 'goweek') { ui.week = t.dataset.id; ui.tab = 'week'; lsSet('tab', 'week'); window.scrollTo(0, 0); render(); }
   else if (a === 'refresh') load();
   else if (a === 'view') { ui.view = t.dataset.v; lsSet('view', ui.view); render(); }
+  else if (a === 'member') { ui.member = ui.member === t.dataset.p ? null : t.dataset.p; render(); }
   else picksAct(a, t);
 });
 document.addEventListener('change', function(e){
