@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Golf Pool">
-<meta name="app-version" content="2026-11-09.5">
+<meta name="app-version" content="2026-11-09.6">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=2">
 <link rel="manifest" href="manifest.webmanifest">
@@ -120,7 +120,9 @@ main{padding-bottom:calc(90px + var(--sab))}
 header.top{padding-top:calc(14px + var(--sat))}
 .pickcard .pcrow{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .pickcard .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--mute)}
-.pickcard{padding:10px 14px}
+.pickcard{padding:10px 14px;display:block;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.pctog{display:inline-flex;align-items:center;gap:3px;margin-top:4px;font-weight:700;color:var(--fair)}
+.pctog svg{width:14px;height:14px}
 .pickcard .big{font-family:Fraunces,Georgia,serif;font-weight:800;font-size:26px;line-height:1.05;color:var(--green)}
 .pcnote{text-align:right;font-size:12px;color:var(--mute);line-height:1.35}
 .chips2{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
@@ -420,9 +422,11 @@ function viewSeason(){
   var nums = winPicks.map(function(x){ return x.r.pick; }).filter(Boolean);
   if (nums.length) {
     var avgField = avg(winPicks.filter(function(x){ return x.r.pick; }).map(function(x){ return (x.size + 1) / 2; }));
-    h += '<div class="card pickcard"><div class="pcrow"><div><div class="lbl">Winners\' average pick #</div><div class="big">' + fmt1(avg(nums)) + '</div></div>' +
-      '<div class="pcnote">Middle of the order is about #' + fmt1(avgField) + '<br>' + nums.length + ' winning pick' + (nums.length === 1 ? '' : 's') + ' counted</div></div>' +
-      '<div class="chips2">' + winPicks.slice(0, 12).map(function(x){ return '<span title="' + esc(x.w.name) + '">' + (x.r.pick ? '#' + x.r.pick : '#?') + ' ' + esc(x.r.player) + '</span>'; }).join('') + '</div></div>';
+    var showChips = !!ui.chips;
+    h += '<button class="card pickcard" data-act="pickchips" aria-expanded="' + showChips + '"><div class="pcrow"><div><div class="lbl">Winners\' average pick #</div><div class="big">' + fmt1(avg(nums)) + '</div></div>' +
+      '<div class="pcnote">Middle of the order is about #' + fmt1(avgField) + '<br>' + nums.length + ' winning pick' + (nums.length === 1 ? '' : 's') + ' counted' +
+      '<div class="pctog">' + (showChips ? 'Hide winners' : 'Show winners') + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + (showChips ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6') + '"></path></svg></div></div></div>' +
+      (showChips ? '<div class="chips2">' + winPicks.map(function(x){ return '<span title="' + esc(x.w.name) + '">' + (x.r.pick ? '#' + x.r.pick : '#?') + ' ' + esc(x.r.player) + '</span>'; }).join('') + '</div>' : '') + '</button>';
   }
 
   h += '<p class="small muted" style="margin:4px 4px 8px">Tap a name to see their week-by-week picks.</p>';
@@ -588,6 +592,7 @@ document.addEventListener('click', function(e){
   else if (a === 'goweek') { ui.week = t.dataset.id; ui.tab = 'week'; lsSet('tab', 'week'); window.scrollTo(0, 0); render(); }
   else if (a === 'refresh') load();
   else if (a === 'view') { ui.view = t.dataset.v; lsSet('view', ui.view); render(); }
+  else if (a === 'pickchips') { ui.chips = !ui.chips; render(); }
   else if (a === 'member') { ui.member = ui.member === t.dataset.p ? null : t.dataset.p; render(); }
   else picksAct(a, t);
 });
