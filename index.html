@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Golf Pool">
-<meta name="app-version" content="2026-11-09.6">
+<meta name="app-version" content="2026-11-11.1">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=2">
 <link rel="manifest" href="manifest.webmanifest">
@@ -97,6 +97,16 @@ textarea.t{min-height:150px;resize:vertical;font-family:ui-monospace,Menlo,monos
 .note{background:var(--gold2);border-radius:12px;padding:10px 12px;font-size:14px;margin:10px 0}
 .hist .it .w{font-weight:600}
 .err{color:var(--red);font-size:14px;margin-top:8px}
+.tsw .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--mute)}
+.tsw .spin1:not(.btn .spin1){border-color:#0f3d2e33;border-top-color:var(--fair)}
+.tsw .cur{font-weight:700;font-size:17px;margin:2px 0 8px}
+.evl{display:grid;gap:8px;margin:10px 0}
+.evo{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:12px;border:1.5px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;font:inherit;color:inherit}
+.evo.sel{border-color:var(--fair);background:#eef6f1}
+.evo .rd{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);background:#fff;flex:none;box-sizing:border-box}
+.evo.sel .rd{border:6px solid var(--fair)}
+.evo .nm{font-weight:600}
+.evo .cpill{font-size:11px;font-weight:700;background:var(--gold2);color:#7a5b00;border-radius:99px;padding:2px 8px;margin-left:6px;white-space:nowrap}
 .score .topar{font-weight:700;font-size:18px}
 .score .topar.under{color:var(--red)}
 .mc .topar{color:var(--mute);font-weight:600}
@@ -475,6 +485,7 @@ function viewPicks(){
       '<p class="small muted">Lay the sheet flat in good light and fill the frame. One name and one golfer per line works best.</p>' +
       (pk.err ? '<div class="err">' + esc(pk.err) + '</div>' : '') + '</div>';
     h += '<button class="btn ghost block" data-act="manual">Type picks in instead</button>';
+    h += viewSwitch();
     h += '<button class="btn ghost block" data-act="lock">Lock</button>';
     return h;
   }
@@ -497,6 +508,24 @@ function viewPicks(){
     '<button class="btn primary block" style="margin-top:10px" data-act="savepicks"' + (pk.busy ? ' disabled' : '') + '>' + (pk.busy ? esc(pk.busy) : 'Save ' + pk.rows.length + ' pick' + (pk.rows.length === 1 ? '' : 's')) + '</button>' +
     '<button class="btn ghost block" data-act="cancelrows">Start over</button></div>';
   return h;
+}
+function viewSwitch(){
+  var t = pk.tsw || {}, cur = pk.weeks[0] || '';
+  var h = '<div class="card tsw"><div class="lbl">This week\'s tournament</div><div class="cur">' + esc(cur || 'No open week') + '</div>';
+  if (!t.open) return h + (cur ? '<button class="btn block" data-act="tswopen">Change tournament</button>' : '') + '</div>';
+  if (t.loading) return h + '<p class="small muted"><span class="spin1"></span> Finding this week\'s tournaments on every tour…</p></div>';
+  if (t.list) {
+    if (!t.list.length) h += '<p class="small muted">No other tournaments found this week.</p>';
+    h += '<div class="evl">' + t.list.map(function(e, i){
+      return '<button class="evo' + (t.sel === i ? ' sel' : '') + '" data-act="tswsel" data-i="' + i + '"' + (t.busy ? ' disabled' : '') + '><span class="rd"></span><span><span class="nm">' + esc(e.name) + '</span>' +
+        (e.current ? '<span class="cpill">Current</span>' : '') + '<div class="small muted">' + esc(e.tourName) + (e.players ? ' · ' + e.players + ' players' : '') + '</div></span></button>';
+    }).join('') + '</div>';
+    var s = t.sel != null ? t.list[t.sel] : null;
+    if (s && !s.current) h += '<p class="small muted">Picks already saved move over to this tournament and scores come from its leaderboard.</p>' +
+      '<button class="btn primary block" data-act="tswgo"' + (t.busy ? ' disabled' : '') + '>' + (t.busy ? '<span class="spin1"></span> Switching…' : 'Switch to ' + esc(s.name)) + '</button>';
+  }
+  if (t.err) h += '<div class="err">' + esc(t.err) + '</div>';
+  return h + '<button class="btn ghost block" data-act="tswclose"' + (t.busy ? ' disabled' : '') + '>Cancel</button></div>';
 }
 function syncRows(){
   document.querySelectorAll('[data-ri]').forEach(function(inp){
@@ -540,7 +569,27 @@ function picksAct(a, t){
     }).catch(function(e){ pk.pinErr = e.message; }).then(function(){ pk.busy = ''; render(); });
     return true;
   }
-  if (a === 'lock') { pk.unlocked = false; pk.pin = ''; lsSet('pin', ''); pk.rows = null; render(); return true; }
+  if (a === 'tswopen') {
+    pk.tsw = { open: true, loading: true }; render();
+    post({ action: 'events', pin: pk.pin }).then(function(j){
+      pk.tsw.list = j.events || []; pk.tsw.from = j.week;
+      pk.tsw.list.forEach(function(e, i){ if (e.current) pk.tsw.sel = i; });
+    }).catch(function(e){ pk.tsw.err = e.message; }).then(function(){ pk.tsw.loading = false; render(); });
+    return true;
+  }
+  if (a === 'tswsel') { if (pk.tsw && !pk.tsw.busy) { pk.tsw.sel = +t.dataset.i; pk.tsw.err = ''; render(); } return true; }
+  if (a === 'tswclose') { pk.tsw = null; render(); return true; }
+  if (a === 'tswgo') {
+    var tw = pk.tsw, ev = tw && tw.list[tw.sel]; if (!ev || tw.busy) return true;
+    tw.busy = true; tw.err = ''; render();
+    post({ action: 'switch', pin: pk.pin, id: ev.id, tour: ev.tour, from: tw.from }).then(function(j){
+      pk.tsw = null; pk.weeks = [j.week].concat(pk.weeks.slice(1)); pk.week = j.week;
+      toastMsg('This week is now ' + j.week + (j.moved ? ' · ' + j.moved + ' pick' + (j.moved === 1 ? '' : 's') + ' moved' : ''));
+      ui.week = null; load();
+    }).catch(function(e){ tw.busy = false; tw.err = e.message; render(); });
+    return true;
+  }
+  if (a === 'lock') { pk.tsw = null; pk.unlocked = false; pk.pin = ''; lsSet('pin', ''); pk.rows = null; render(); return true; }
   if (a === 'manual') { pk.rows = [{ player: '', golfer: '', unsure: false }]; pk.meta = { existing: 0 }; pk.err = ''; render(); return true; }
   if (a === 'addrow') { syncRows(); pk.rows.push({ player: '', golfer: '', unsure: false }); render(); return true; }
   if (a === 'rmrow') { syncRows(); pk.rows.splice(+t.dataset.i, 1); if (!pk.rows.length) pk.rows = null; render(); return true; }
