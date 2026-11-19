@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Golf Pool">
-<meta name="app-version" content="2026-11-11.1">
+<meta name="app-version" content="2026-11-19.1">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=2">
 <link rel="manifest" href="manifest.webmanifest">
@@ -97,6 +97,7 @@ textarea.t{min-height:150px;resize:vertical;font-family:ui-monospace,Menlo,monos
 .note{background:var(--gold2);border-radius:12px;padding:10px 12px;font-size:14px;margin:10px 0}
 .hist .it .w{font-weight:600}
 .err{color:var(--red);font-size:14px;margin-top:8px}
+.pkn input.miss{border-color:var(--red);box-shadow:0 0 0 1px var(--red)}
 .tsw .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--mute)}
 .tsw .spin1:not(.btn .spin1){border-color:#0f3d2e33;border-top-color:var(--fair)}
 .tsw .cur{font-weight:700;font-size:17px;margin:2px 0 8px}
@@ -490,14 +491,17 @@ function viewPicks(){
     return h;
   }
   var unsure = pk.rows.filter(function(r){ return r.unsure; }).length;
+  var someNum = pk.rows.some(function(r){ return r.pick; });
+  var noNum = someNum ? pk.rows.filter(function(r){ return !r.pick; }).length : 0;
   h += '<div class="card"><h2>Check the picks</h2><p class="small muted" style="margin-top:0">' + esc(pk.week) +
     (pk.meta && pk.meta.fieldSize ? ' · checked against ' + pk.meta.fieldSize + ' golfers in the field' : '') + '</p>' +
+    (noNum ? '<div class="note">' + noNum + ' line' + (noNum === 1 ? ' has' : 's have') + ' no Pick # (outlined in red). Type the number in, or it gets numbered after everyone else.</div>' : '') +
     (unsure ? '<div class="note">' + unsure + ' line' + (unsure === 1 ? '' : 's') + ' marked ⚠ need a look. Fix the name or golfer, then save.</div>' : '') +
     (pk.meta && pk.meta.existing ? '<p class="small muted">' + pk.meta.existing + ' picks already saved for this week. Anyone listed here gets their pick replaced.</p>' : '') +
     '<p class="small muted">Pick # comes from the number next to each name. Leave it blank to number them in order.</p>' +
     '<div class="rv">' + pk.rows.map(function(r, i){
       return '<div class="rvrow' + (r.unsure ? ' warn' : '') + '"><div class="rvf">' +
-        '<div class="rvtop"><label class="pkn"><span>Pick #</span><input class="t" data-ri="' + i + '" data-rk="pick" inputmode="numeric" pattern="[0-9]*" maxlength="3" value="' + esc(r.pick || '') + '" aria-label="Pick number"></label>' +
+        '<div class="rvtop"><label class="pkn"><span>Pick #</span><input class="t' + (!r.pick && someNum ? ' miss' : '') + '" data-ri="' + i + '" data-rk="pick" inputmode="numeric" pattern="[0-9]*" maxlength="3" value="' + esc(r.pick || '') + '" aria-label="Pick number"></label>' +
         '<input class="t" data-ri="' + i + '" data-rk="player" placeholder="Name" value="' + esc(r.player) + '" autocapitalize="words"></div>' +
         '<input class="t" data-ri="' + i + '" data-rk="golfer" placeholder="Golfer" value="' + esc(r.golfer) + '" autocapitalize="words">' +
         (r.written && r.written !== r.golfer ? '<div class="small muted">Read as “' + esc(r.written) + '”</div>' : '') + '</div>' +
@@ -531,7 +535,7 @@ function syncRows(){
   document.querySelectorAll('[data-ri]').forEach(function(inp){
     var r = pk.rows[+inp.dataset.ri]; if (!r) return;
     var v = inp.value.trim();
-    if (inp.dataset.rk === 'pick') { v = v.replace(/[^0-9]/g, ''); r.pick = v ? parseInt(v, 10) : null; return; }
+    if (inp.dataset.rk === 'pick') { v = v.replace(/[^0-9]/g, ''); var np = v ? parseInt(v, 10) : null; if (np !== (r.pick || null)) pk.blankOk = false; r.pick = np; return; }
     if (r[inp.dataset.rk] !== v) { r[inp.dataset.rk] = v; if (inp.dataset.rk === 'golfer') r.written = ''; }
   });
 }
@@ -553,7 +557,7 @@ function readPhoto(file){
   pk.err = ''; pk.busy = 'Reading handwriting…'; render();
   shrink(file).then(function(b64){ return post({ action: 'read', pin: pk.pin, week: pk.week, image: b64, mime: 'image/jpeg' }); })
     .then(function(j){
-      pk.week = j.week; pk.weeks = j.weeks || pk.weeks; pk.meta = j; pk.rows = j.rows || [];
+      pk.week = j.week; pk.weeks = j.weeks || pk.weeks; pk.meta = j; pk.rows = j.rows || []; pk.blankOk = false;
       if (pk.rows.every(function(r){ return r.pick; })) pk.rows.sort(function(a, b){ return a.pick - b.pick; });
       if (!pk.rows.length) { pk.rows = null; pk.err = 'No picks found in that photo. Try a closer, brighter shot.'; }
     })
@@ -601,6 +605,13 @@ function picksAct(a, t){
     var seen = {}, dup = [];
     pk.rows.forEach(function(r){ if (r.pick) { if (seen[r.pick] && dup.indexOf(r.pick) < 0) dup.push(r.pick); seen[r.pick] = true; } });
     if (dup.length) { pk.err = 'Pick #' + dup.join(', #') + ' is used more than once. Fix the numbers, then save.'; render(); return true; }
+    var blank = pk.rows.filter(function(r){ return !r.pick; }).map(function(r){ return r.player; });
+    if (blank.length && blank.length < pk.rows.length && !pk.blankOk) {
+      pk.blankOk = true;
+      pk.err = 'No Pick # for ' + blank.join(', ') + '. Fill ' + (blank.length === 1 ? 'it' : 'them') + ' in, or tap Save again to number ' + (blank.length === 1 ? 'it' : 'them') + ' after everyone else.';
+      render(); return true;
+    }
+    pk.blankOk = false;
     pk.err = ''; pk.busy = 'Saving…'; render();
     post({ action: 'save', pin: pk.pin, week: pk.week, rows: pk.rows.map(function(r){ return { player: r.player, golfer: r.golfer, pick: r.pick || null }; }) })
       .then(function(j){ pk.rows = null; pk.busy = ''; ui.tab = 'week'; ui.week = null; lsSet('tab', 'week'); toastMsg('Saved ' + j.saved + ' picks for ' + j.week); load(); })
